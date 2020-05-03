@@ -2,9 +2,11 @@
 
 A virtual play area for train-based card play.
 
-The bot is controlled by players within an IRC channel and in private messages (PMs) to individual players.
+The bot is controlled by players within an IRC channel and in private messages (PMs) to individual players. You will still need a shared board and playing pieces; I have found that a shared Google Slides presentation works quite well here.
 
 ### Installation and running
+
+For both IRC and Discord:
 
 Optionally create and activate a new virtualenv with the following line in the shell:
 
@@ -19,25 +21,11 @@ Install dependencies using pip:
 pip3 install -r requirements.txt
 ```
 
-Copy the example `config.ini` to another file (eg `local.ini`) and edit it for your settings (dealer is currently ignored):
+Each bot currently controls one and only one game (though you still have to start it with 'new' or 'load'; see below). (This is particularly inconvenient for Discord; pull requests welcome.)
 
-```
-[global]
-network=irc.example.com
-channel=#cardgame
-nickname=BotNick
-dealer=DealerNick
-```
+You will need a `default` savegame which is used to initialise new games. Create a directory called `state/default/` and inside place two text files, `deck.txt` and `tickets.txt`. These contain the two main decks of cards, with one named card per line. Refer to your copy of TrainGame for a list of cards, or come up with your own. You can use mIRC colour codes if targetting IRC (in vim, ^V^C inserts a literal Ctrl+C).
 
-Finally, run the bot. It will connect to the given IRC network and join the given channel.
-
-```
-python3 ircbot.py local.ini
-```
-
-Each bot currently controls one and only one game (though you still have to start it with 'new' or 'load'; see below.)
-
-You will also need a `default` savegame which is used to initialise new games. Create a directory called `state/default` and inside place two text files, `deck.txt` and `tickets.txt`. These contain the two main decks of cards, with one named card per line. Example:
+Example:
 
 `deck.txt`
 ```
@@ -56,7 +44,55 @@ LOCOMOTIVE
 [IO<->EUROPA 666 pts]
 ```
 
-### Model
+Now follow the IRC or Discord-specific instructions below:
+
+#### IRC
+
+Copy the example `config.ini` to another file (eg `local.ini`) and edit it for your settings (dealer is currently ignored):
+
+```
+[global]
+network=irc.example.com
+channel=#cardgame
+nickname=BotNick
+dealer=DealerNick
+savedir=./state/
+```
+
+You can now run the bot. It will connect to the given IRC network and join the given channel.
+
+```
+python3 ircbot.py local.ini
+```
+
+#### Discord
+
+Disclaimer: I don't often work with Node; apologies if any of the instructions here are not idiomatic; I'm happy to be corrected!
+
+Firstly you need to create a Discord bot that will run the code. This can be done here: https://discordapp.com/developers/applications . Make a note of your Discord API token, found here:
+
+![Screenshot showing Click To Reveal Token on the Discord developer portal Application's Bot page](discord/discord-app.png =25%)
+
+You will need to additionally install [my branch of PyNode](https://github.com/iguanaonmystack/pynode) (an npm package; install with npm install `/path/to/clone`, and [gyp-next](https://github.com/nodejs/gyp-next) (or maybe regular gyp?) (a Python package; install with `python3 setup.py install`)
+
+Install the bot and its requirements with `npm install .`
+
+Create a file in the discord/ directory called .env, with the following contents:
+
+`.env`
+```
+DISCORD_TOKEN=[discord api token]
+GAME_CHANNEL=general
+SAVE_DIR=../state/
+
+```
+
+Run with `node bot.js`.
+
+
+### Playing
+
+#### Model
 
 The game is played using various actions that moves cards between various _piles_.
 
@@ -92,9 +128,9 @@ The various piles and typical transfer commands are shown below.
 +-------------------+
 ```
 
-### Commands
+#### Commands
 
-#### In-channel
+##### In-channel
 
 Commands are given in the form: `[Botname]: command`. The need for `[Botname]` can currently be changed in code.
 
@@ -112,7 +148,7 @@ Commands are given in the form: `[Botname]: command`. The need for `[Botname]` c
 * `debug`: Enable remote console. Instructions are printed to bot's stdout.
 
 
-#### Private message to bot
+##### Private message to bot
 
 Commands are given in the form `command`; ie prefixing with the Bot's name is not required.
 
